@@ -43,6 +43,7 @@ android {
         dataBinding true
         viewBinding true
     }
+    namespace 'com.example.android.trackmysleepquality'
 
 }
 
