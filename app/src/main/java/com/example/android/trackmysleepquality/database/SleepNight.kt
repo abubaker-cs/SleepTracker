@@ -22,7 +22,7 @@ import androidx.room.PrimaryKey
 
 /**
  * Step 1 - Entity:
- * > Tables Structure
+ * >>> Tables Structure
  */
 
 @Entity(tableName = "daily_sleep_quality_table")
