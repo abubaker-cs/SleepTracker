@@ -21,8 +21,9 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 /**
- * Step 1 - Entity:
- * >>> Tables Structure
+ * Step 1 - Entity
+ * ===============
+ * Tables Structure
  */
 
 @Entity(tableName = "daily_sleep_quality_table")
