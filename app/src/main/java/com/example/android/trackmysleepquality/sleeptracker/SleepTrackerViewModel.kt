@@ -24,8 +24,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.android.trackmysleepquality.database.SleepDatabaseDao
 import com.example.android.trackmysleepquality.database.SleepNight
 import com.example.android.trackmysleepquality.formatNights
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * ViewModel for SleepTrackerFragment.
@@ -35,10 +36,18 @@ class SleepTrackerViewModel(
     application: Application
 ) : AndroidViewModel(application) {
 
-    private var viewModel = Job()
+    // private var viewModelJob = Job()
+
+    // It will cancel all active coroutines
+    // override fun onCleared() {
+    //    super.onCleared()
+    //    viewModelJob.cancel()
+    // }
 
     // Scope for the Coroutines to run in.
+    // private val uiScope = CoroutineScope(Dispatchers.Main + viewModelJob)
 
+    // *************************************** ^^^^ NOT NEEDED
 
     // Use the "tonight" liveData variable and use a coroutine to initialize it from the database
     // "tonight" will hold the current night, and make it MutableLiveData
@@ -53,26 +62,39 @@ class SleepTrackerViewModel(
     }
 
     private fun initializeTonight() {
+
+        // Coroutine - Get tonight's info from the database
         viewModelScope.launch {
             tonight.value = getTonightFromDatabase()
         }
+
     }
 
+    // We are using suspend because we want to call this function from inside the coroutine and not the block.
     private suspend fun getTonightFromDatabase(): SleepNight? {
+
+        // This returns the latest night saved in the database
         var night = database.getTonight()
 
+        // If the start and end times are the same, then we know that we are continuing with an existing night
         if (night?.endTimeMilli != night?.startTimeMilli) {
             night = null
         }
+
         return night
+
     }
 
     // Click Handlers for: Start(), Stop() and Clear() buttons (using coroutines)
-    fun onStartTracking() {
-        val newNight = SleepNight()
 
+    // Click Handler - Button: START
+    suspend fun onStartTracking() {
+        val newNight = SleepNight()
+        insert(newNight)
+        tonight.value = getTonightFromDatabase()
     }
 
+    // Click Handler - Button: STOP
     fun onStopTracking() {
         viewModelScope.launch {
             val oldNight = tonight.value ?: return@launch
@@ -81,15 +103,24 @@ class SleepTrackerViewModel(
         }
     }
 
-    private suspend fun update(night: SleepNight) {
-        database.update(night)
-    }
-
+    // Click Handler - Button: CLEAR
     fun onClear() {
         viewModelScope.launch {
             clear()
             tonight.value = null
         }
+    }
+
+    // ---------------------------------------------------------
+
+    private suspend fun insert(night: SleepNight) {
+        withContext(Dispatchers.IO) {
+            database.insert(night)
+        }
+    }
+
+    private suspend fun update(night: SleepNight) {
+        database.update(night)
     }
 
     private suspend fun clear() {
