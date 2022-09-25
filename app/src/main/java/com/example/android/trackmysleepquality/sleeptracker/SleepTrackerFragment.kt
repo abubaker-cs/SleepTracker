@@ -22,7 +22,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.example.android.trackmysleepquality.R
 import com.example.android.trackmysleepquality.database.SleepDatabase
 import com.example.android.trackmysleepquality.databinding.FragmentSleepTrackerBinding
@@ -67,6 +69,25 @@ class SleepTrackerFragment : Fragment() {
 
         // Set the current activity as the lifecycle owner of the binding.
         binding.lifecycleOwner = this
+
+        // We add an observer on our navigate to sleep quality state variable
+        sleepTrackerViewModel.navigateToSleepQuality.observe(viewLifecycleOwner, Observer {
+
+            //  navigate and pass along the ID of the current night, and then call doneNavigating():
+                night ->
+            night?.let {
+
+                //
+                this.findNavController().navigate(
+                    SleepTrackerFragmentDirections
+                        .actionSleepTrackerFragmentToSleepQualityFragment(night.nightId)
+                )
+
+                //
+                sleepTrackerViewModel.doneNavigating()
+            }
+
+        })
 
         return binding.root
     }

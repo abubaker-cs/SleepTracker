@@ -17,10 +17,7 @@
 package com.example.android.trackmysleepquality.sleeptracker
 
 import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.example.android.trackmysleepquality.database.SleepDatabaseDao
 import com.example.android.trackmysleepquality.database.SleepNight
 import com.example.android.trackmysleepquality.formatNights
@@ -62,6 +59,17 @@ class SleepTrackerViewModel(
         formatNights(nights, application.resources)
     }
 
+    //
+    private val _navigateToSleepQuality = MutableLiveData<SleepNight>()
+
+    val navigateToSleepQuality: LiveData<SleepNight>
+        get() = _navigateToSleepQuality
+
+    //
+    fun doneNavigating() {
+        _navigateToSleepQuality.value = null
+    }
+
     // Local CRUD functions: insert(), update() and clear()
     init {
         initializeTonight()
@@ -93,7 +101,9 @@ class SleepTrackerViewModel(
 
     // Click Handlers for: Start(), Stop() and Clear() buttons (using coroutines)
 
-    // Click Handler - Button: START
+    /**
+     * Executes when the START button is clicked
+     */
     fun onStartTracking() {
 
         viewModelScope.launch {
@@ -104,18 +114,30 @@ class SleepTrackerViewModel(
 
     }
 
-    // Click Handler - Button: STOP
+    /**
+     * Executes when the STOP button is clicked
+     */
     fun onStopTracking() {
 
         viewModelScope.launch {
+
+            // In Kotlin, the return@label syntax is used for specifying which function among
+            // several nested ones this statement returns from.
+            // In this case, we are specifying to return from launch(), not the lambda.
             val oldNight = tonight.value ?: return@launch
+
+            // Update the night in the database to add the end time.
             oldNight.endTimeMilli = System.currentTimeMillis()
+
             update(oldNight)
+            _navigateToSleepQuality.value = oldNight
         }
 
     }
 
-    // Click Handler - Button: CLEAR
+    /**
+     * Executes when the CLEAR button is clicked
+     */
     fun onClear() {
         viewModelScope.launch {
             clear()
