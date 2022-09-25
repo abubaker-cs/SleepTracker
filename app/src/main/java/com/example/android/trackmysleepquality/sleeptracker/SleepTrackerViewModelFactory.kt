@@ -32,9 +32,13 @@ class SleepTrackerViewModelFactory(
 ) : ViewModelProvider.Factory {
     @Suppress("unchecked_cast")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
+
+        // Verify if the SleepTrackerViewModel class is available, and return an instance of it
         if (modelClass.isAssignableFrom(SleepTrackerViewModel::class.java)) {
             return SleepTrackerViewModel(dataSource, application) as T
         }
+
+        // Otherwise, we throw an exception.
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

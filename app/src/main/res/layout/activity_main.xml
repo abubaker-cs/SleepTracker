@@ -26,6 +26,14 @@
 
     </data>
 
+    <!--
+    Although Android offers a variety of widgets to provide small and reusable interactive elements,
+    you might also need to reuse larger components that require a special layout. To efficiently reuse
+    complete layouts, you can use the <include/> and <merge/> tags to embed another layout inside
+    the current layout.
+
+    REF: https://developer.android.com/develop/ui/views/layout/improving-layouts/reusing-layouts
+    -->
     <merge>
 
         <androidx.fragment.app.FragmentContainerView
