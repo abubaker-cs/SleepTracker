@@ -56,6 +56,12 @@ class SleepTrackerViewModel(
     // Get records of all nights using the .getAllNights() function defined in SleepDatabaseDao
     private val nights = database.getAllNights()
 
+    // - It will be executed everytime whenever the night will receive new data from the database
+    // Transform nights into a nightsString using formatNights()
+    val nightsString = Transformations.map(nights) { nights ->
+        formatNights(nights, application.resources)
+    }
+
     // Local CRUD functions: insert(), update() and clear()
     init {
         initializeTonight()
@@ -88,19 +94,25 @@ class SleepTrackerViewModel(
     // Click Handlers for: Start(), Stop() and Clear() buttons (using coroutines)
 
     // Click Handler - Button: START
-    suspend fun onStartTracking() {
-        val newNight = SleepNight()
-        insert(newNight)
-        tonight.value = getTonightFromDatabase()
+    fun onStartTracking() {
+
+        viewModelScope.launch {
+            val newNight = SleepNight()
+            insert(newNight)
+            tonight.value = getTonightFromDatabase()
+        }
+
     }
 
     // Click Handler - Button: STOP
     fun onStopTracking() {
+
         viewModelScope.launch {
             val oldNight = tonight.value ?: return@launch
             oldNight.endTimeMilli = System.currentTimeMillis()
             update(oldNight)
         }
+
     }
 
     // Click Handler - Button: CLEAR
@@ -126,12 +138,6 @@ class SleepTrackerViewModel(
     private suspend fun clear() {
         database.clear()
     }
-
-    // Transform nights into a nightsString using formatNights()
-    val nightsString = Transformations.map(nights) { nights ->
-        formatNights(nights, application.resources)
-    }
-
 
 }
 
